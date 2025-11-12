@@ -45,6 +45,10 @@ public class Shooter extends SubsystemBase {
 
     public double PIDoutput;
 
+    public static double RPMThresh = 110;
+
+    public static double Autoshort = 3040;
+    public static double Autolong = 3390;
 
 
     public enum ShooterStatus {
@@ -77,6 +81,12 @@ public class Shooter extends SubsystemBase {
 
         // Set PID tolerance (adjustable via static parameter)
         pidController.setTolerance(tolerance);
+
+        focused = false;
+
+        automode = false;
+
+        autoLonger = true;
     }
 
     /**
@@ -118,7 +128,7 @@ public class Shooter extends SubsystemBase {
         return targetRPM;
     }
     public boolean isAtTargetRPM() {
-        return (getTargetRPM() < getFlyWheelRPM() + 60 && getTargetRPM() > getFlyWheelRPM() - 60)&&getFlyWheelRPM()>1000;
+        return (getTargetRPM() < getFlyWheelRPM() + RPMThresh && getTargetRPM() > getFlyWheelRPM()-10)&&getFlyWheelRPM()>2600&&(focused||automode);
     }
 
     // Store current motor power for telemetry/graphing
@@ -199,7 +209,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public void completeStop() {
+        setTargetRPM(0);
         setFlywheelPower(0);
+
         pidController.reset();
     }
 
@@ -212,24 +224,24 @@ public class Shooter extends SubsystemBase {
     public void updateAim() {
         distance = abs(distance);
         if (distance > 3.25){
-            setTargetRPM(3850);
+            setTargetRPM(3650);
         }
         else if (distance < 1.4){
             setTargetRPM(100*distance+2750);
         }
         else{
-            setTargetRPM(300*distance+2750);
+            setTargetRPM(200*distance+2750);
         }
 
         if (distance < 0.01){
-            setTargetRPM(3500);
+            setTargetRPM(3600);
         }
 
         if(automode&&autoLonger){
-            setTargetRPM(3500);
+            setTargetRPM(Autolong);
         }
         else if(automode&&!autoLonger){
-            setTargetRPM(3100);
+            setTargetRPM(Autoshort);
         }
     }
 
@@ -252,14 +264,14 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic(){
         updateFlywheelPID();
-        if(shooterStatus == ShooterStatus.Shooting && focused){
+        if(shooterStatus == ShooterStatus.Shooting){
             updateAim();
         }
         else if(shooterStatus == ShooterStatus.Stop){
             completeStop();
         }
         else if(shooterStatus == ShooterStatus.Idling) {
-            setTargetRPM(3000);
+            setTargetRPM(2200);
         }
     }
     public void updateTelemetry() {

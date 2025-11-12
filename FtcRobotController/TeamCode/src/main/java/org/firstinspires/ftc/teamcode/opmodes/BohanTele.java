@@ -58,8 +58,9 @@ public class BohanTele extends CommandOpMode {
         intake.setDefaultCommand(new IntakeCommand(gamepad1, intake));
         shooter = new Shooter(hardwareMap);
         limelight = new MyLimelight(hardwareMap);
+        shooter.setShooterStatus(Shooter.ShooterStatus.Stop);
+        intake.setIntakeState(Intake.IntakeTransferState.Intake_Steady);
 
-        limelight.initRedPipeline(); //TEMPORARY
 
         //Commands
         LimelightLockInCommand limelightLock = new LimelightLockInCommand(drivetrain, limelight, gamepad1);
@@ -68,6 +69,8 @@ public class BohanTele extends CommandOpMode {
         gamepadEx1.getGamepadButton(GamepadKeys.Button.X).toggleWhenPressed(limelightLock);
         gamepadEx1.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> intake.setSwingBarPos(0));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.A).whenReleased(() ->intake.setSwingBarPos(0.4));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(() -> limelight.initBluePipeline());
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(() -> limelight.initRedPipeline());
         //DRIVER TWO
     }
 

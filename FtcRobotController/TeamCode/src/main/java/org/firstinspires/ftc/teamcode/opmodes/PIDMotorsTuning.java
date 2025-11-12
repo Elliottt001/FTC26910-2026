@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Shooter;
  * No gamepad controls - just pure PID tuning
  */
 @Config
+@Disabled
 @TeleOp(name = "Shooter PID Tuning", group = "Tuning")
 public class PIDMotorsTuning extends OpMode {
     

@@ -29,6 +29,9 @@ public class Intake extends SubsystemBase {
         transfer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        autoforce = false;
+        autotrans = false;
+        shooterauto = false;
     }
     public void setSwingBarPos(double pos) {
         swingBar.setPosition(pos);

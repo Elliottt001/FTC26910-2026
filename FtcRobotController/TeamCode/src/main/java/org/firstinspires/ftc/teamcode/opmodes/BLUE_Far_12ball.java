@@ -14,31 +14,31 @@ import org.firstinspires.ftc.teamcode.subsystems.MyLimelight;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Scheduler;
 
-@Autonomous(name = "RED_Near_12ball_gate")
-public class RED_Near_12ball extends OpMode {
+@Autonomous(name = "BLUE_Far_12ball")
+public class BLUE_Far_12ball extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer, timer;
     //private final ElapsedTime timer  = new ElapsedTime();
 
-    private int pathState = 0;
+    private int pathState =0;
     private final Pose startPose = new Pose(0, 0, 0); // Start Pose of our robot.
-    private final Pose ShootPose1 = new Pose(-40.53817, -29.4827, 0.83604);
-    private final Pose GatePose = new Pose(-0.6099,-34.4572, 1.600);
-    private final Pose PrepGather1 = new Pose(-23.0954, -27.4628, 0);
+    private final Pose ShootPose1 = new Pose(9.4033, -1.4877, 0.406764);
 
-    private final Pose FinishGather1 = new Pose(-6.4513, -27.4628, 0);
+    private final Pose ShootPose2 = new Pose(71.9996,1.5216,0.7225);
+    private final Pose PrepGather1 = new Pose(24.7910, 17.19286, 1.590508);
 
-    private final Pose PrepGather2 = new Pose(-26.0954, -49.0732, 0);
+    private final Pose FinishGather1 = new Pose(24.7910, 37.2588, 1.590508);
 
-    private final Pose FinishGather2 = new Pose(-6.4513, -51.0732, 0);
+    private final Pose PrepGather2 = new Pose(48.849, 17.19286, 1.590508);
 
-    private final Pose PrepGather3 = new Pose(-26.0954, -70.1802, 0);//accounted for overshoot
+    private final Pose FinishGather2 = new Pose(48.849, 37.2588, 1.590508);
 
-    private final Pose FinishGather3 = new Pose(-6.4513, -75.1802, 0);
+    private final Pose PrepGather3 = new Pose(72.907, 17.19286, 1.590508);
 
-    private final Pose GatePassby = new Pose(-23.0954, -27.4628, 1.5647);
+    private final Pose FinishGather3 = new Pose(72.907, 37.2588, 1.590508);
 
+    private final Pose endPose = new Pose(4.64556,44.66559,1.5623);
 
     private boolean firstshooting = false;
     private PathChain Shootpath1, Shootpath2, Shootpath3,Shootpath4, lastOutPath;
@@ -50,12 +50,12 @@ public class RED_Near_12ball extends OpMode {
     public Scheduler scheduler;
 
     public void buildPaths() {
+        /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         Shootpath1 = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, ShootPose1))
                 .setLinearHeadingInterpolation(startPose.getHeading(), ShootPose1.getHeading())
-
                 .build();
 
         prepGatherPath1 = follower.pathBuilder()
@@ -63,17 +63,13 @@ public class RED_Near_12ball extends OpMode {
                 .setLinearHeadingInterpolation(ShootPose1.getHeading(), PrepGather1.getHeading())
                 .addPath(new BezierLine(PrepGather1, FinishGather1))
                 .setLinearHeadingInterpolation(PrepGather1.getHeading(), FinishGather1.getHeading())
-                .addPath(new BezierLine(FinishGather1, GatePose))
-                .setLinearHeadingInterpolation(FinishGather1.getHeading(), GatePose.getHeading())
                 .build();
 
 
 
         Shootpath2 = follower.pathBuilder()
-                .addPath(new BezierLine(GatePose, GatePassby))
-                .setLinearHeadingInterpolation(GatePose.getHeading(), GatePassby.getHeading())
-                .addPath(new BezierLine(GatePassby, ShootPose1))
-                .setLinearHeadingInterpolation(GatePassby.getHeading(), ShootPose1.getHeading())
+                .addPath(new BezierLine(FinishGather1, ShootPose1))
+                .setLinearHeadingInterpolation(FinishGather1.getHeading(), ShootPose1.getHeading())
                 .build();
 
         prepGatherPath2 = follower.pathBuilder()
@@ -84,38 +80,39 @@ public class RED_Near_12ball extends OpMode {
                 .build();
 
         Shootpath3 = follower.pathBuilder()
-
-                .addPath(new BezierLine(FinishGather2, ShootPose1))
-                .setLinearHeadingInterpolation(PrepGather2.getHeading(), ShootPose1.getHeading())
+                .addPath(new BezierLine(FinishGather2, PrepGather2))
+                .setLinearHeadingInterpolation(FinishGather2.getHeading(), PrepGather2.getHeading())
+                .addPath(new BezierLine(PrepGather2, ShootPose2))
+                .setLinearHeadingInterpolation(PrepGather2.getHeading(), ShootPose2.getHeading())
                 .build();
 
         prepGatherPath3 = follower.pathBuilder()
-                .addPath(new BezierLine(ShootPose1, PrepGather3))
-                .setLinearHeadingInterpolation(ShootPose1.getHeading(), PrepGather3.getHeading())
+                .addPath(new BezierLine(ShootPose2, PrepGather3))
+                .setLinearHeadingInterpolation(ShootPose2.getHeading(), PrepGather3.getHeading())
                 .addPath(new BezierLine(PrepGather3, FinishGather3))
                 .setLinearHeadingInterpolation(PrepGather3.getHeading(), FinishGather3.getHeading())
-                .setBrakingStrength(1.5)
                 .build();
 
         Shootpath4 = follower.pathBuilder()
-
-                .addPath(new BezierLine(FinishGather3, ShootPose1))
-                .setLinearHeadingInterpolation(PrepGather3.getHeading(), ShootPose1.getHeading())
+                .addPath(new BezierLine(FinishGather3, PrepGather3))
+                .setLinearHeadingInterpolation(FinishGather3.getHeading(), PrepGather3.getHeading())
+                .addPath(new BezierLine(PrepGather3, ShootPose2))
+                .setLinearHeadingInterpolation(PrepGather3.getHeading(), ShootPose2.getHeading())
                 .build();
-//
-//        lastOutPath = follower.pathBuilder()
-//                .addPath(new BezierLine(ShootPose1, endPose))
-//                .setLinearHeadingInterpolation(ShootPose1.getHeading(), endPose.getHeading())
-//                .build();
+
+        lastOutPath = follower.pathBuilder()
+                .addPath(new BezierLine(ShootPose2, endPose))
+                .setLinearHeadingInterpolation(ShootPose2.getHeading(), endPose.getHeading())
+                .build();
 
     }
 
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                shooter.autoLonger = false;
+                shooter.autoLonger = true;
                 shooter.setShooterStatus(Shooter.ShooterStatus.Idling);
-                follower.followPath(Shootpath1,true);
+                follower.followPath(Shootpath1);
                 setPathState(1);
                 break;
             case 1:
@@ -128,13 +125,13 @@ public class RED_Near_12ball extends OpMode {
                         firstshooting = true;
                     }
                     else{
-                        if(timer.getElapsedTimeSeconds()> 3.5){
+                        if(timer.getElapsedTimeSeconds()> 4.2){
                             shooter.setShooterStatus(Shooter.ShooterStatus.Stop);
                             intake.setSwingBarPos(0.4);
                             intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                             setPathState(2);
                         }
-                        if(timer.getElapsedTimeSeconds()>2 && timer.getElapsedTimeSeconds()<3.5){
+                        if(timer.getElapsedTimeSeconds()>2.3 && timer.getElapsedTimeSeconds()<4.2){
                             intake.setSwingBarPos(0);
                         }
 
@@ -153,11 +150,11 @@ public class RED_Near_12ball extends OpMode {
                 }
                 break;
             case 3:
-                if(follower.getPose().getX()>-6){
+                if(follower.getPose().getY()<-34){
                     intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                     intake.periodic();
                 }
-                else if (follower.getPose().getX() > -9){
+                else if (follower.getPose().getY()< -25){
                     intake.setIntakeState(Intake.IntakeTransferState.Send_It_Up);
                     intake.periodic();
                 }
@@ -172,7 +169,7 @@ public class RED_Near_12ball extends OpMode {
                 break;
             case 4:
 
-                follower.followPath(Shootpath2,true);
+                follower.followPath(Shootpath2);
                 firstshooting = false;
                 setPathState(5);
 
@@ -187,13 +184,13 @@ public class RED_Near_12ball extends OpMode {
                         firstshooting = true;
                     }
                     else{
-                        if(timer.getElapsedTimeSeconds()> 3.5){
+                        if(timer.getElapsedTimeSeconds()> 4.2){
                             shooter.setShooterStatus(Shooter.ShooterStatus.Stop);
                             intake.setSwingBarPos(0.4);
                             intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                             setPathState(6);
                         }
-                        if(timer.getElapsedTimeSeconds()>2 && timer.getElapsedTimeSeconds()<3.5){
+                        if(timer.getElapsedTimeSeconds()>2.3 && timer.getElapsedTimeSeconds()<4.2){
                             intake.setSwingBarPos(0);
                         }
 
@@ -211,15 +208,14 @@ public class RED_Near_12ball extends OpMode {
                 }
                 break;
             case 7:
-                if(follower.getPose().getX()>-6){
+                if(follower.getPose().getY()<-34){
                     intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                     intake.periodic();
                 }
-                else if (follower.getPose().getX() > -9){
+                else if (follower.getPose().getY()< -25){
                     intake.setIntakeState(Intake.IntakeTransferState.Send_It_Up);
                     intake.periodic();
                 }
-
                 if(!follower.isBusy()) {
                     setPathState(8);
                     shooter.setShooterStatus(Shooter.ShooterStatus.Idling);
@@ -229,7 +225,7 @@ public class RED_Near_12ball extends OpMode {
                 break;
             case 8:
                 shooter.autoLonger = false;
-                follower.followPath(Shootpath3,true);
+                follower.followPath(Shootpath3);
                 firstshooting = false;
                 setPathState(9);
 
@@ -244,13 +240,13 @@ public class RED_Near_12ball extends OpMode {
                         firstshooting = true;
                     }
                     else{
-                        if(timer.getElapsedTimeSeconds()> 3.5){
+                        if(timer.getElapsedTimeSeconds()> 4.2){
                             shooter.setShooterStatus(Shooter.ShooterStatus.Stop);
                             intake.setSwingBarPos(0.4);
                             intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                             setPathState(10);
                         }
-                        if(timer.getElapsedTimeSeconds()>2 && timer.getElapsedTimeSeconds()<3.5){
+                        if(timer.getElapsedTimeSeconds()>2.3 && timer.getElapsedTimeSeconds()<4.2){
                             intake.setSwingBarPos(0);
                         }
 
@@ -268,15 +264,14 @@ public class RED_Near_12ball extends OpMode {
                 }
                 break;
             case 11:
-                if(follower.getPose().getX()>-6){
+                if(follower.getPose().getY()<-34){
                     intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                     intake.periodic();
                 }
-                else if (follower.getPose().getX() > -9){
+                else if (follower.getPose().getY()< -25){
                     intake.setIntakeState(Intake.IntakeTransferState.Send_It_Up);
                     intake.periodic();
                 }
-
                 if(!follower.isBusy()) {
                     setPathState(12);
                     shooter.setShooterStatus(Shooter.ShooterStatus.Idling);
@@ -286,7 +281,7 @@ public class RED_Near_12ball extends OpMode {
                 break;
             case 12:
 
-                follower.followPath(Shootpath4,true);
+                follower.followPath(Shootpath4);
                 firstshooting = false;
                 setPathState(13);
 
@@ -301,29 +296,29 @@ public class RED_Near_12ball extends OpMode {
                         firstshooting = true;
                     }
                     else{
-                        if(timer.getElapsedTimeSeconds()> 3.5){
+                        if(timer.getElapsedTimeSeconds()> 4.2){
                             shooter.setShooterStatus(Shooter.ShooterStatus.Stop);
                             intake.setSwingBarPos(0.4);
                             intake.setIntakeState(Intake.IntakeTransferState.Suck_In);
                             setPathState(14);
                         }
-                        if(timer.getElapsedTimeSeconds()>2 && timer.getElapsedTimeSeconds()<3.5){
+                        if(timer.getElapsedTimeSeconds()>2.3 && timer.getElapsedTimeSeconds()<4.2){
                             intake.setSwingBarPos(0);
                         }
 
                     }
                     break;
                 }
-//            case 14:
-//                if(!follower.isBusy()) {
-//                    follower.followPath(lastOutPath);
-//                    setPathState(15);
-//                }
-//                break;
-//            case 15:
-//                if(!follower.isBusy()) {
-//                    setPathState(16);
-//                }
+            case 14:
+                if(!follower.isBusy()) {
+                    follower.followPath(lastOutPath);
+                    setPathState(15);
+                }
+                break;
+            case 15:
+                if(!follower.isBusy()) {
+                    setPathState(16);
+                }
 
         }
     }
@@ -361,7 +356,6 @@ public class RED_Near_12ball extends OpMode {
         autonomousPathUpdate();
 
         // Feedback to Driver Hub for debugging
-        telemetry.addData("realRPM", shooter.getFlyWheelRPM());
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
@@ -384,7 +378,7 @@ public class RED_Near_12ball extends OpMode {
         shooter = new Shooter(hardwareMap);
         shooter.automode = true;
         limelight = new MyLimelight(hardwareMap);
-        limelight.initRedPipeline();
+        limelight.initBluePipeline();
         limelight.startDetect();
         intake.setIntakeState(Intake.IntakeTransferState.Intake_Steady);
         shooter.setShooterStatus(Shooter.ShooterStatus.Stop);

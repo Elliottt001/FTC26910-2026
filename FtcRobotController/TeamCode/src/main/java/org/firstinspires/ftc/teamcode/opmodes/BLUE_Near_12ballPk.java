@@ -14,8 +14,8 @@ import org.firstinspires.ftc.teamcode.subsystems.MyLimelight;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Scheduler;
 
-@Autonomous(name = "RED_Near_12ball_gate")
-public class RED_Near_12ball extends OpMode {
+@Autonomous(name = "BlUE_Near_12ball")
+public class BLUE_Near_12ballPk extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer, timer;
@@ -23,21 +23,22 @@ public class RED_Near_12ball extends OpMode {
 
     private int pathState = 0;
     private final Pose startPose = new Pose(0, 0, 0); // Start Pose of our robot.
-    private final Pose ShootPose1 = new Pose(-40.53817, -29.4827, 0.83604);
-    private final Pose GatePose = new Pose(-0.6099,-34.4572, 1.600);
-    private final Pose PrepGather1 = new Pose(-23.0954, -27.4628, 0);
+    private final Pose ShootPose1 = new Pose(-40.53817, 29.4827, -0.83604);
+    private final Pose GatePose = new Pose(-0.6099,34.4572, -1.600);
+    private final Pose PrepGather1 = new Pose(-23.0954, 27.4628, 0);
 
-    private final Pose FinishGather1 = new Pose(-6.4513, -27.4628, 0);
+    private final Pose FinishGather1 = new Pose(-6.4513, 27.4628, 0);
 
-    private final Pose PrepGather2 = new Pose(-26.0954, -49.0732, 0);
+    private final Pose PrepGather2 = new Pose(-26.0954, 47.0732, 0);
 
-    private final Pose FinishGather2 = new Pose(-6.4513, -51.0732, 0);
+    private final Pose FinishGather2 = new Pose(-6.4513, 51.0732, 0);
 
-    private final Pose PrepGather3 = new Pose(-26.0954, -70.1802, 0);//accounted for overshoot
+    private final Pose PrepGather3 = new Pose(-26.0954, 70.1802, 0);//accounted for overshoot
 
-    private final Pose FinishGather3 = new Pose(-6.4513, -75.1802, 0);
+    private final Pose FinishGather3 = new Pose(-6.4513, 75.1802, 0);
 
-    private final Pose GatePassby = new Pose(-23.0954, -27.4628, 1.5647);
+    private final Pose GatePassby = new Pose(-23.0954, 27.4628, -1.5647);
+    private final Pose Park = new Pose(-26.0954, 49.0732, -0.83604);
 
 
     private boolean firstshooting = false;
@@ -63,16 +64,17 @@ public class RED_Near_12ball extends OpMode {
                 .setLinearHeadingInterpolation(ShootPose1.getHeading(), PrepGather1.getHeading())
                 .addPath(new BezierLine(PrepGather1, FinishGather1))
                 .setLinearHeadingInterpolation(PrepGather1.getHeading(), FinishGather1.getHeading())
-                .addPath(new BezierLine(FinishGather1, GatePose))
-                .setLinearHeadingInterpolation(FinishGather1.getHeading(), GatePose.getHeading())
+//                .addPath(new BezierLine(FinishGather1, GatePose))
+//                .setLinearHeadingInterpolation(FinishGather1.getHeading(), GatePose.getHeading())
                 .build();
 
 
 
         Shootpath2 = follower.pathBuilder()
-                .addPath(new BezierLine(GatePose, GatePassby))
-                .setLinearHeadingInterpolation(GatePose.getHeading(), GatePassby.getHeading())
-                .addPath(new BezierLine(GatePassby, ShootPose1))
+//                .addPath(new BezierLine(GatePose, GatePassby))
+//                .setLinearHeadingInterpolation(GatePose.getHeading(), GatePassby.getHeading())
+//                .addPath(new BezierLine(GatePassby, ShootPose1))
+                .addPath(new BezierLine(FinishGather1, ShootPose1))
                 .setLinearHeadingInterpolation(GatePassby.getHeading(), ShootPose1.getHeading())
                 .build();
 
@@ -101,6 +103,12 @@ public class RED_Near_12ball extends OpMode {
 
                 .addPath(new BezierLine(FinishGather3, ShootPose1))
                 .setLinearHeadingInterpolation(PrepGather3.getHeading(), ShootPose1.getHeading())
+                .build();
+
+        lastOutPath = follower.pathBuilder()
+
+                .addPath(new BezierLine(ShootPose1, Park))
+                .setLinearHeadingInterpolation(ShootPose1.getHeading(), Park.getHeading())
                 .build();
 //
 //        lastOutPath = follower.pathBuilder()
@@ -314,11 +322,12 @@ public class RED_Near_12ball extends OpMode {
                     }
                     break;
                 }
-//            case 14:
-//                if(!follower.isBusy()) {
-//                    follower.followPath(lastOutPath);
-//                    setPathState(15);
-//                }
+            case 14:
+                if(!follower.isBusy()) {
+                    follower.followPath(lastOutPath);
+                    shooter.setShooterStatus(Shooter.ShooterStatus.Stop);
+                    setPathState(15);
+                }
 //                break;
 //            case 15:
 //                if(!follower.isBusy()) {
