@@ -12,7 +12,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+
+// 定位器实现类，用于支持 SparkFun OTOS (Optical Tracking Odometry Sensor) 传感器。
+// 目前没有使用
+// 使用：在机器人上安装了 SparkFun OTOS 传感器，要在 MecanumDrive.java 中把 localizer = ... 那一行改成使用 OTOSLocalizer。同时，在这个文件的 Params 类里填入传感器相对于机器人中心的安装偏移量 (offset)。
 @Config
+// extends (继承): 用于一个类继承另一个类，或者一个接口继承另一个接口。继承是“是/属于”（is-a）的关系，子类获得了父类的实现。
+// implements (实现): 用于一个类实现一个或多个接口。实现是“能做”（can-do）的关系，类承诺将提供接口中定义的所有功能。
 public class OTOSLocalizer implements Localizer {
     public static class Params {
         public double angularScalar = 1.0;

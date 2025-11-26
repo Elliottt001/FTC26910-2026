@@ -51,6 +51,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+// 如果你的机器人使用的是普通轮子（或者履带），通过左右两侧轮子的速度差来转向（像坦克一样），而不是麦克纳姆轮，那么你就应该使用这个文件，而不是 MecanumDrive.java。
+
 @Config
 public final class MecanumDrive {
     public static class Params {

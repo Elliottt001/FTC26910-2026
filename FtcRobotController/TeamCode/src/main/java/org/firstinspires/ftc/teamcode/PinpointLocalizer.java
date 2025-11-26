@@ -15,6 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 
 import java.util.Objects;
 
+// 这是FtcRobotController/TeamCode/src/main/java/org/firstinspires/ftc/teamcode 根目录下唯一被使用的localizer类（其他作为备用），用于支持 GoBilda Pinpoint 定位传感器。
+// 根据机器人的传感器类型选择定位器，但既然tele的能跑就说明用对了。
 @Config
 public final class PinpointLocalizer implements Localizer {
     public static class Params {

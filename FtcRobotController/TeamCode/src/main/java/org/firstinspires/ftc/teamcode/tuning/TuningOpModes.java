@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
+// 如果你想启用或禁用某些测试程序，或者修改它们在菜单里显示的名字，你需要改这个文件。
 public final class TuningOpModes {
     // TODO: change this to TankDrive.class if you're using tank
     public static final Class<?> DRIVE_CLASS = MecanumDrive.class;

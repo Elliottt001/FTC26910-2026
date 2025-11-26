@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.messages;
 import com.acmerobotics.roadrunner.PoseVelocity2dDual;
 import com.acmerobotics.roadrunner.Time;
 
+// message 文件夹中通常不需要修改
 public final class DriveCommandMessage {
     public long timestamp;
     public double forwardVelocity;

@@ -19,7 +19,8 @@ public class Intake extends SubsystemBase {
     public boolean autotrans = false;
 
     public boolean autoforce = false;
-    public Intake(HardwareMap hardwareMap) {      //Constructor,新建对象时需要
+    public Intake(HardwareMap hardwareMap) {      //Constructor,新建对象时需要、
+        // 找到对应硬件设备
         intake = hardwareMap.get(DcMotor.class, "intake");
         transfer = hardwareMap.get(DcMotor.class, "transfer");
         swingBar = hardwareMap.get(Servo.class, "swingBar");

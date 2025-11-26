@@ -14,7 +14,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+// 用于配置 Pedro Pathing 路径跟随库的常量
+// 据你机器人的实际物理结构和测试结果来调整这里的数值
+
 public class    Constants {
+        // 跟随器常量
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(11.337)
             .forwardZeroPowerAcceleration(-26.465452204903155)
@@ -34,6 +38,7 @@ public class    Constants {
                     new FilteredPIDFCoefficients(0.02, 0, 0, 0.6, 0)
             );
 
+            // 底盘常量
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
             .leftFrontMotorName("frontLeft")
@@ -50,6 +55,7 @@ public class    Constants {
             .nominalVoltage(13.2)
             .useVoltageCompensation(true);
 
+            // 定位器常量
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-84)
             .strafePodX(-168)
@@ -61,6 +67,7 @@ public class    Constants {
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
+            // 路径约束
     public static PathConstraints pathConstraints = new PathConstraints(
             0.997,
             50,
@@ -68,6 +75,7 @@ public class    Constants {
             1
     );
 
+    // 辅助方法，用于根据上述配置和硬件映射（HardwareMap）直接构建并返回一个可用的 Follower 对象，简化了初始化过程
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mecanumDrivetrain(driveConstants)
