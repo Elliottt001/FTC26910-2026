@@ -200,6 +200,7 @@ public class BLUE_Far_12ball extends OpMode {
                     // 6. 进入下一阶段
                     setPathState(3);
                 }
+
                 break;
                 // “捡球突击”的发令枪。它告诉机器人：“别射了，把吸盘开到最大，冲向球堆”
 
