@@ -103,6 +103,8 @@ $$u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}$$
 
 ---
 
+
+
 ## 🔧 机械结构改变对 PID 参数的影响及调参指南
 
 当你修改机器人的机械结构（如更换电机、改变齿轮比、增加配重、改变机械臂长度等）时，系统的物理特性（惯量、摩擦、扭矩）会发生变化，原有的 PID 参数通常不再适用，需要重新调整。
@@ -141,7 +143,49 @@ $$u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}$$
 
 对于机械臂或升降机等受重力影响明显的机构，单纯靠 PID 有时很吃力。建议引入 **前馈 (Feedforward, F)**。
 
-*   **原理：** 根据物理模型直接计算出维持当前状态所需的力（例如，抵消重力所需的电压）。
-*   **公式：** Output = PID_Output + Feedforward
-*   **好处：** 让 PID 只需要处理“误差”，而不需要花费力气去对抗恒定的重力或摩擦力，大大降低调参难度。
+#### 3.1 什么是前馈？
+如果说 PID 是一个精密的“纠错算法”（事后诸葛亮），那么前馈通常只是一个简单的“预判公式”（未卜先知）。
+
+它们是**并联**工作的：
+$$ \text{最终输出} = \underbrace{\text{PID (负责纠错)}}_{\text{复杂的反馈算法}} + \underbrace{\text{前馈 (负责预判)}}_{\text{简单的物理公式}} $$
+
+*   **PID (闭环)**：看到误差才工作。
+*   **前馈 (开环)**：基于物理模型（如重力、摩擦力）直接输出力量，不依赖传感器反馈。
+
+#### 3.2 通俗比喻：端水杯
+想象你手里端着一杯水，要保持它在半空中不动。
+
+*   **纯 PID (反馈控制)**：你的手必须感觉到杯子**往下掉了一点点**（产生了误差），大脑才会下令肌肉用力把它抬回去。如果完全依赖这个，你的手可能会一直微微上下抖动。
+*   **前馈 (Feedforward)**：你知道杯子有重量，所以你**直接给手一个向上的力**，刚好抵消杯子的重量。这时候，你的 PID 只需要负责处理微小的晃动，而不是费力去对抗重力。
+
+#### 3.3 FTC 机器人实战场景
+
+**场景 A：垂直升降机 (Lift)**
+重力是恒定的，前馈通常是一个常数。
+```java
+// 假设测试出 0.1 的动力刚好能抵消重力 (Feedforward)
+double kF = 0.1; 
+
+// PID 计算出的动力，只负责消除位置误差
+double pidOutput = pidController.calculate(targetPosition, currentPosition);
+
+// 最终给电机的动力 = PID + 前馈
+double finalPower = pidOutput + kF; 
+motor.setPower(finalPower);
+```
+
+**场景 B：旋转机械臂 (Arm)**
+重力对机械臂的影响是随角度变化的（水平时最重，垂直时最轻）。前馈通常包含三角函数。
+```java
+// kF 是水平伸直时维持手臂所需的动力
+// Math.cos(angle) 会根据角度自动调整力度
+double feedforward = kF * Math.cos(Math.toRadians(currentAngle));
+
+double pidOutput = pidController.calculate(targetAngle, currentAngle);
+
+motor.setPower(pidOutput + feedforward);
+```
+
+#### 3.4 总结
+前馈 (Feedforward) 利用你对物理世界的了解，提前给电机一个力，帮 PID 分担最累的“脏活累活”（如对抗重力），让 PID 能专心处理微小的误差，从而使控制效果更丝滑。
 
