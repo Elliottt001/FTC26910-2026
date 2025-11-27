@@ -21,16 +21,16 @@ public class Shooter extends SubsystemBase {
     private final DcMotorEx shooterRight;
     private final PIDController pidController;
 
-    // Tunable PID parameters - can be adjusted via FTC Dashboard
-    public static double Kp = 27;  // Proportional gain
-    public static double Ki = 0.01; // Integral gain
-    public static double Kd = -10;    // Derivative gain
-    public static double pidThreshold = 1000.0; // RPM threshold for PID vs full power control
-    public static double tolerance = 0.3; // RPM tolerance for "at target" determination
+    // 可调 PID 参数 - 可以通过 FTC Dashboard 实时调整
+    public static double Kp = 27;  // 比例增益 (Proportional)
+    public static double Ki = 0.01; // 积分增益 (Integral)
+    public static double Kd = -10;    // 微分增益 (Derivative)
+    public static double pidThreshold = 1000.0; // PID 控制生效的 RPM 阈值（低于此差值用 PID，高于此差值全速）
+    public static double tolerance = 0.3; // 判断“到达目标”的容差范围
 
     public static double aimRPM = 0;
 
-    // Target RPM for the flywheel
+    // 飞轮的目标转速 (RPM)
     private double targetRPM = 0.0;
 
     public double distance = 0;
@@ -65,21 +65,22 @@ public class Shooter extends SubsystemBase {
         shooterLeft = hardwareMap.get(DcMotorEx.class, "shooterLeft");
         shooterRight = hardwareMap.get(DcMotorEx.class, "shooterRight");
 
-        // Initialize PID controller
+        // 初始化 PID 控制器
         pidController = new PIDController(Kp, Ki, Kd);
 
-        // Configure motors
+        // 配置电机
         shooterLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
+        // 设置电机方向：一正一反，确保两个飞轮向同一个方向（向外）旋转发射物体
         shooterLeft.setDirection(DcMotor.Direction.FORWARD);
         shooterRight.setDirection(DcMotor.Direction.REVERSE);
 
-        // Configure motor modes - only shooterLeft has encoder
-        shooterLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Has encoder
-        shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // No encoder
+        // 配置电机模式 - 只有 shooterLeft 接了编码器线
+        shooterLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // 有编码器
+        shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // 无编码器（跟随）
 
-        // Set PID tolerance (adjustable via static parameter)
+        // 设置 PID 容差
         pidController.setTolerance(tolerance);
 
         focused = false;
@@ -90,8 +91,8 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Get current flywheel velocity in rad/s
-     * Uses shooterLeft (the motor with encoder) for velocity feedback
+     * 获取当前飞轮角速度 (rad/s)
+     * 使用 shooterLeft (带编码器的电机) 作为反馈源
      */
     public void updateFocused(boolean focus){
         focused = focus;
@@ -100,7 +101,7 @@ public class Shooter extends SubsystemBase {
         shooterStatus = status;
     }
     public double getFlyWheelVelocity() {
-        return shooterLeft.getVelocity() * (2.0 * Math.PI) / 60.0; // Convert RPM to rad/s
+        return shooterLeft.getVelocity() * (2.0 * Math.PI) / 60.0; // 将 RPM 转换为 rad/s
 
     }
 
@@ -108,15 +109,15 @@ public class Shooter extends SubsystemBase {
         distance = dis;
     }
     /**
-     * Get current flywheel RPM
-     * Uses shooterLeft (the motor with encoder) for velocity feedback
-     * shooterRight runs in open-loop mode (no encoder)
+     * 获取当前飞轮转速 (RPM)
+     * 使用 shooterLeft (带编码器的电机) 作为反馈源
+     * shooterRight 在开环模式下运行 (无编码器)
      */
     public double getFlyWheelRPM() {
-        // shooterLeft has encoder, so we use its velocity as representative
-        // of the entire flywheel speed (both motors should spin at same speed)
-        // getVelocity() returns encoder ticks per second, convert to RPM
-        return shooterLeft.getVelocity() * 60.0 / 28.0; // 28 ticks per revolution
+        // shooterLeft 有编码器，所以我们用它的速度代表整个飞轮系统的速度
+        // (理论上两个电机应该转速一致)
+        // getVelocity() 返回的是每秒编码器脉冲数 (ticks/sec)，需要转换为 RPM
+        return shooterLeft.getVelocity() * 60.0 / 28.0; // 28 ticks per revolution (GoBilda 6000RPM motor?)
     }
     public void setTargetRPM(double targetRPM) {
         this.targetRPM = targetRPM;
@@ -127,17 +128,20 @@ public class Shooter extends SubsystemBase {
     public double getTargetRPM() {
         return targetRPM;
     }
+    
+    // 判断是否达到目标转速
     public boolean isAtTargetRPM() {
+        // 条件：(目标 < 当前+阈值) 且 (目标 > 当前-10) 且 (当前 > 2600) 且 (已对准或自动模式)
         return (getTargetRPM() < getFlyWheelRPM() + RPMThresh && getTargetRPM() > getFlyWheelRPM()-10)&&getFlyWheelRPM()>2600&&(focused||automode);
     }
 
-    // Store current motor power for telemetry/graphing
+    // 存储当前电机功率用于遥测/绘图
     private double currentMotorPower = 0.0;
     private double currentPIDOutput = 0.0;
 
     /**
-     * Update PID controller and set motor powers
-     * Call this method in main loop for continuous control
+     * 更新 PID 控制器并设置电机功率
+     * 在主循环中持续调用此方法以实现闭环控制
      */
     public void settoShooting(){
         shooterStatus = ShooterStatus.Shooting;
@@ -151,9 +155,12 @@ public class Shooter extends SubsystemBase {
         shooterStatus = ShooterStatus.Idling;
     }
     public void updateFlywheelPID() {
+        // 使用电机内置的 PIDF 控制器 (RunMode.RUN_USING_ENCODER)
+        // 注意：这里直接设置了内置控制器的系数，而不是使用上面的自定义 pidController 计算结果
         shooterLeft.setVelocityPIDFCoefficients(Kp,Ki,Kd,0);
         shooterRight.setVelocityPIDFCoefficients(Kp,Ki,Kd,0);
 
+        // 将目标 RPM 转换为 ticks/sec 并设置给电机
         shooterLeft.setVelocity(targetRPM*28/60);
         shooterRight.setVelocity(targetRPM*28/60);
 //        if (targetRPM > 0) {
@@ -199,12 +206,12 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Set flywheel power directly (bypasses PID)
+     * 直接设置飞轮功率 (绕过 PID)
      */
     public void setFlywheelPower(double power) {
         shooterLeft.setPower(power);
         shooterRight.setPower(power);
-        // Reset target when using manual power
+        // 手动设置功率时重置目标 RPM
         targetRPM = 0;
     }
 
@@ -221,22 +228,28 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    // 根据距离自动计算目标转速
     public void updateAim() {
         distance = abs(distance);
+        // 远距离
         if (distance > 3.25){
             setTargetRPM(3650);
         }
+        // 近距离
         else if (distance < 1.4){
-            setTargetRPM(100*distance+2750);
+            setTargetRPM(100*distance+2750); // 线性插值
         }
+        // 中距离
         else{
-            setTargetRPM(200*distance+2750);
+            setTargetRPM(200*distance+2750); // 线性插值
         }
 
+        // 极近距离 (几乎贴脸)
         if (distance < 0.01){
             setTargetRPM(3600);
         }
 
+        // 自动模式下的固定转速覆盖
         if(automode&&autoLonger){
             setTargetRPM(Autolong);
         }
@@ -261,17 +274,20 @@ public class Shooter extends SubsystemBase {
     public double getCurrentPIDOutput() {
         return currentPIDOutput;
     }
+    
+    // 周期性任务：状态机逻辑
     @Override
     public void periodic(){
-        updateFlywheelPID();
+        updateFlywheelPID(); // 持续更新 PID 控制
+        
         if(shooterStatus == ShooterStatus.Shooting){
-            updateAim();
+            updateAim(); // 射击模式：根据距离计算转速
         }
         else if(shooterStatus == ShooterStatus.Stop){
-            completeStop();
+            completeStop(); // 停止模式：切断电源
         }
         else if(shooterStatus == ShooterStatus.Idling) {
-            setTargetRPM(2200);
+            setTargetRPM(2200); // 怠速模式：保持低速旋转
         }
     }
     public void updateTelemetry() {

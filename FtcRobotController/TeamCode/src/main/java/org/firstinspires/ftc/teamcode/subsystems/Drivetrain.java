@@ -29,6 +29,8 @@ public class Drivetrain extends SubsystemBase {
 
         // 将左侧两个电机（前左、后左）的旋转方向设置为“反向” (REVERSE)。
         // 因为镜像对称，左侧电机需要反向旋转以确保机器人直线行驶时所有轮子朝同一方向转动。
+        // 左边的电机可能需要顺时针转，右边的需要逆时针转。
+        // 这样你就可以给两个电机都发送 1.0 的功率
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }

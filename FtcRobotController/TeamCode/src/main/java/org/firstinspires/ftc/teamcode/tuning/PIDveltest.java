@@ -8,6 +8,8 @@
 //
 //import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 //
+//// 这是一个用来测试飞轮（Shooter）PID 速度控制的程序
+//// 已经被注释掉了，可能暂时不需要使用
 //@Config
 //@TeleOp(name = "PID Flywheel Tuning")
 //public final class PIDveltest extends CommandOpMode {

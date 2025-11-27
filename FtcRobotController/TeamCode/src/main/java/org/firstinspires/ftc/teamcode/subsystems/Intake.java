@@ -29,7 +29,16 @@ public class Intake extends SubsystemBase {
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         transfer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        // 物理安装方向与代码逻辑方向不一致。
+        // 实际需求：你的进气装置（Intake）可能通过齿轮、链条传动，或者电机本身就是反着装的（轴朝内或朝外）。
+        // 结果：当你给正功率想让它“吸入”时，它实际上在往外“吐”。
+        // 解决：为了让代码逻辑符合直觉（即 setPower(1) = 吸入），我们需要在初始化时把电机方向设为 REVERSE。这样代码里的“正”就对应了物理上的“吸入”。
+        // 它确保了当你调用 intake.setPower(1) 时，机器人是真的在吸入物体，而不是把它吐出去。
+        // 这是为了让写逻辑代码的人更舒服，不需要每次写代码时都去想“哦，这个电机是反的，我要给负数如 intake.setPower(-1) 才能吸进来”。
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // autoforce 强制手动覆盖开关
+        // 它用于在“自动射击模式”下，强行夺回手动控制权。
         autoforce = false;
         autotrans = false;
         shooterauto = false;
@@ -55,18 +64,29 @@ public class Intake extends SubsystemBase {
     }
 
     // 状态定义：intakepower / transferpower
+    //  Java 枚举（Enum）的一个高级用法：枚举不仅可以是简单的常量列表，
+    // 还可以拥有自己的属性（变量）、构造函数和方法。
     public enum IntakeTransferState {
-        Suck_In(1,0), // 吸入模式
-        Split_Out(-0.7, -1), // 吐出模式
-        Send_It_Up(1,1), // 输送模式
-        Intake_Steady(0,0); // 静止模式
-        private final double intakePower;
-        private final double transferPower;
+        // 1. 定义枚举常量（实际上是在调用构造函数）
+        Suck_In(1, 0),       // 相当于：new IntakeTransferState(1, 0)
+        Split_Out(-0.7, -1), // 相当于：new IntakeTransferState(-0.7, -1)
+        Send_It_Up(1, 1),    // ...
+        Intake_Steady(0, 0); // 注意这里的封号 ; 表示常量列表结束
+
+        // 后面的这些：是为了支撑前面的常量定义
+        
+        // 2. 定义成员变量（属性）
+        private final double intakePower;   // 用来存第一个参数
+        private final double transferPower; // 用来存第二个参数
+
+        // 3. 定义构造函数（Constructor）
+        // 这个构造函数是私有的，专门给上面那四个常量用的
         IntakeTransferState(double InPower, double TrPower) {
             this.intakePower = InPower;
             this.transferPower = TrPower;
         }
     }
+
 
     // 设置进气系统的目标状态：按下手柄时候及时响应
     public void setIntakeState(IntakeTransferState intakeTransferState) {
@@ -141,6 +161,6 @@ public class Intake extends SubsystemBase {
 自动配合：在自动射击模式下，它会忽略手柄指令，完全听从 updateautotranse（飞轮状态）的指挥。
 飞轮没转好 -> 强制停止输送（防止卡弹）。
 飞轮转好了 -> 自动开始输送。
-持续监控：利用 periodic 周期性函数，确保即使在没有按键操作的情况下，进气系统也能实时响应飞轮状态的变化（例如飞轮刚加速到位，进气就立刻开始送球）。
+4. 持续监控：利用 periodic 周期性函数，确保即使在没有按键操作的情况下，进气系统也能实时响应飞轮状态的变化（例如飞轮刚加速到位，进气就立刻开始送球）。
 
 */

@@ -53,11 +53,13 @@ import java.util.List;
 
 
 // 如果你想启用或禁用某些测试程序，或者修改它们在菜单里显示的名字，你需要改这个文件。
+// 这个文件是 RoadRunner 调试模式的“注册中心”
 public final class TuningOpModes {
     // TODO: change this to TankDrive.class if you're using tank
+    // 这里设置你的机器人底盘类型，如果是麦克纳姆轮就用 MecanumDrive.class，如果是坦克底盘就用 TankDrive.class
     public static final Class<?> DRIVE_CLASS = MecanumDrive.class;
-
     public static final String GROUP = "quickstart";
+    // 设置为 true 可以禁用所有调试程序
     public static final boolean DISABLED = false;
 
     private TuningOpModes() {}
@@ -70,67 +72,7 @@ public final class TuningOpModes {
                 .build();
     }
 
-    private static PinpointView makePinpointView(PinpointLocalizer pl) {
-        return new PinpointView() {
-            @Override
-            public float getHeadingVelocity() {
-                return (float) pl.driver.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
-
-            }
-
-            public float getHeadingVelocity(UnnormalizedAngleUnit unit) {
-                return (float) pl.driver.getHeadingVelocity(unit);
-            }
-
-            GoBildaPinpointDriver.EncoderDirection parDirection = pl.initialParDirection;
-            GoBildaPinpointDriver.EncoderDirection perpDirection = pl.initialPerpDirection;
-
-            @Override
-            public void update() {
-                pl.driver.update();
-            }
-
-            @Override
-            public int getParEncoderPosition() {
-                return pl.driver.getEncoderX();
-            }
-
-            @Override
-            public int getPerpEncoderPosition() {
-                return pl.driver.getEncoderY();
-            }
-
-
-
-            @Override
-            public void setParDirection(@NonNull DcMotorSimple.Direction direction) {
-                parDirection = direction == DcMotorSimple.Direction.FORWARD ?
-                        GoBildaPinpointDriver.EncoderDirection.FORWARD :
-                        GoBildaPinpointDriver.EncoderDirection.REVERSED;
-                pl.driver.setEncoderDirections(parDirection, perpDirection);
-            }
-
-            @Override
-            public DcMotorSimple.Direction getParDirection() {
-                return parDirection == GoBildaPinpointDriver.EncoderDirection.FORWARD ?
-                        DcMotorSimple.Direction.FORWARD : DcMotorSimple.Direction.REVERSE;
-            }
-
-            @Override
-            public void setPerpDirection(@NonNull DcMotorSimple.Direction direction) {
-                perpDirection = direction == DcMotorSimple.Direction.FORWARD ?
-                        GoBildaPinpointDriver.EncoderDirection.FORWARD :
-                        GoBildaPinpointDriver.EncoderDirection.REVERSED;
-                pl.driver.setEncoderDirections(parDirection, perpDirection);
-            }
-
-            @Override
-            public DcMotorSimple.Direction getPerpDirection() {
-                return perpDirection == GoBildaPinpointDriver.EncoderDirection.FORWARD ?
-                        DcMotorSimple.Direction.FORWARD : DcMotorSimple.Direction.REVERSE;
-            }
-        };
-    }
+    // ...existing code...
 
     @OpModeRegistrar
     public static void register(OpModeManager manager) {
@@ -138,6 +80,7 @@ public final class TuningOpModes {
 
         DriveViewFactory dvf;
         if (DRIVE_CLASS.equals(MecanumDrive.class)) {
+            // 配置麦克纳姆轮底盘的调试视图
             dvf = hardwareMap -> {
                 MecanumDrive md = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
                 LazyImu lazyImu = md.lazyImu;
@@ -145,6 +88,7 @@ public final class TuningOpModes {
                 List<EncoderGroup> encoderGroups = new ArrayList<>();
                 List<EncoderRef> leftEncs = new ArrayList<>(), rightEncs = new ArrayList<>();
                 List<EncoderRef> parEncs = new ArrayList<>(), perpEncs = new ArrayList<>();
+                // 根据不同的定位器类型（Localizer），配置不同的编码器组
                 if (md.localizer instanceof MecanumDrive.DriveLocalizer) {
                     MecanumDrive.DriveLocalizer dl = (MecanumDrive.DriveLocalizer) md.localizer;
                     encoderGroups.add(new LynxQuadratureEncoderGroup(
@@ -216,6 +160,7 @@ public final class TuningOpModes {
                 );
             };
         } else if (DRIVE_CLASS.equals(TankDrive.class)) {
+            // 配置坦克底盘的调试视图
             dvf = hardwareMap -> {
                 TankDrive td = new TankDrive(hardwareMap, new Pose2d(0, 0, 0));
                 LazyImu lazyImu = td.lazyImu;
@@ -223,6 +168,7 @@ public final class TuningOpModes {
                 List<EncoderGroup> encoderGroups = new ArrayList<>();
                 List<EncoderRef> leftEncs = new ArrayList<>(), rightEncs = new ArrayList<>();
                 List<EncoderRef> parEncs = new ArrayList<>(), perpEncs = new ArrayList<>();
+                // 根据不同的定位器类型（Localizer），配置不同的编码器组
                 if (td.localizer instanceof TankDrive.DriveLocalizer) {
                     TankDrive.DriveLocalizer dl = (TankDrive.DriveLocalizer) td.localizer;
                     List<Encoder> allEncoders = new ArrayList<>();
@@ -296,6 +242,7 @@ public final class TuningOpModes {
             throw new RuntimeException();
         }
 
+        // 注册各种调试程序到 OpMode 列表
         manager.register(metaForClass(AngularRampLogger.class), new AngularRampLogger(dvf));
         manager.register(metaForClass(ForwardPushTest.class), new ForwardPushTest(dvf));
         manager.register(metaForClass(ForwardRampLogger.class), new ForwardRampLogger(dvf));
@@ -314,6 +261,7 @@ public final class TuningOpModes {
         manager.register(metaForClass(OTOSHeadingOffsetTuner.class), new OTOSHeadingOffsetTuner(dvf));
         manager.register(metaForClass(OTOSPositionOffsetTuner.class), new OTOSPositionOffsetTuner(dvf));
 
+        // 将配置变量暴露给 Dashboard
         FtcDashboard.getInstance().withConfigRoot(configRoot -> {
             for (Class<?> c : Arrays.asList(
                     AngularRampLogger.class,
